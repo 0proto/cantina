@@ -10,17 +10,48 @@ class App extends Component {
       channels: [],
       activeChannel: {},
       users: [],
-      messages: []
+      messages: [],
+      connected: false
     };
   }
 
-  addChannel(name) {
-    let {channels} = this.state;
-    channels.push({id: channels.length, name});
-    this.setState({channels});
-    // TODO : Send to Go server
+  // Called only once after the Component is rendered
+  // This is when the WebSocket connection is initialized
+  componentDidMount() {
+    let ws = this.ws = new WebSocket('ws://echo.websocket.org');
   }
 
+  // Asks the server to start sending channel data in real time
+  suscribe() {
+
+  }
+
+  // Tells the server to stop sending channel data
+  unsuscribe() {
+
+  }
+
+  // Inserts the new channel in the list of channels
+  newChannel(channel) {
+    let {channels} = this.state;
+    channels.push(channel);
+    this.setState({channels});
+  }
+
+  // Sends a 'add channel' message to the WebSocket
+  addChannel(name) {
+    let {channels} = this.state;
+    let msg = {
+      name: 'channel add',
+      data: {
+        id: channels.length,
+        name    
+      }
+    }
+    this.ws.send(JSON.stringify(msg));
+  }
+
+  // Sets the channel the user wants to talk to
   setChannel(activeChannel) {
     let {messages} = this.state;
     messages = [];
@@ -29,6 +60,7 @@ class App extends Component {
     // TODO : Get channel messages from Go server
   }
 
+  // Sets a name for the current user
   setUserName(name) {
     let {users} = this.state;
     users.push({id: users.length, name});
@@ -36,6 +68,7 @@ class App extends Component {
     // TODO : Send to Go server
   }
 
+  // Sends a message to the activeChannel
   sendMessage(body) {
     let {messages, users} = this.state;
     let createdAt = new Date;
