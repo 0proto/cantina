@@ -48,7 +48,7 @@ class Socket {
 
   // Called when the WebSocket connection is closed
   close() {
-    this.ee.emit('close');
+    this.ee.emit('disconnect');
   }
 }
 

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import ChannelSection from './channels/ChannelSection.jsx';
 import UserSection from './users/UserSection.jsx';
 import MessageSection from './messages/MessageSection.jsx';
+import Socket from '../socket.js';
 
 class App extends Component {
   constructor(props) {
@@ -16,66 +17,91 @@ class App extends Component {
   }
 
   // Called only once after the Component is rendered
-  // This is when the WebSocket connection is initialized
   componentDidMount() {
-    let ws = this.ws = new WebSocket('ws://echo.websocket.org');
+    let ws = new WebSocket('ws://localhost:4000')
+    let socket = this.socket = new Socket(ws);
+    socket.on('connect', this.onConnect.bind(this));
+    socket.on('disconnect', this.onDisconnect.bind(this));
+    socket.on('channel add', this.onAddChannel.bind(this));
+    socket.on('user add', this.onAddUser.bind(this));
+    socket.on('user edit', this.onEditUser.bind(this));
+    socket.on('user remove', this.onRemoveUser.bind(this));
+    socket.on('message send', this.onMessageSend.bind(this));
   }
 
-  // Asks the server to start sending channel data in real time
-  suscribe() {
-
+  onConnect() {
+    this.setState({connected: true});
+    this.socket.emit('channel subscribe');
+    this.socket.emit('user subscribe');
   }
 
-  // Tells the server to stop sending channel data
-  unsuscribe() {
-
+  onDisconnect() {
+    this.setState({connected: false});
   }
 
   // Inserts the new channel in the list of channels
-  newChannel(channel) {
+  onAddChannel(channel) {
     let {channels} = this.state;
     channels.push(channel);
     this.setState({channels});
   }
 
+  onAddUser(user) {
+    let {users} = this.state;
+    users.push(user);
+    this.setState({users});
+  }
+
+  onEditUser(editUser) {
+    let {users} = this.state;
+    users = users.map(user => {
+      if (editUser.id === user.id) {
+        return editUser;
+      }
+      return user;
+    });
+    this.setState({users});
+  }
+
+  onRemoveUser(removeUser) {
+    let {users} = this.state;
+    users = users.filter(user => {
+      return user.id !== removeUser.id;
+    });
+    this.setState({users});
+  }
+
+  onMessageSend(message) {
+    let {messages} = this.state;
+    messages.push(message);
+    this.setState({messages});
+  }
+
   // Sends a 'add channel' message to the WebSocket
   addChannel(name) {
-    let {channels} = this.state;
-    let msg = {
-      name: 'channel add',
-      data: {
-        id: channels.length,
-        name    
-      }
-    }
-    this.ws.send(JSON.stringify(msg));
+    this.socket.emit('channel add', {name});
   }
 
   // Sets the channel the user wants to talk to
   setChannel(activeChannel) {
-    let {messages} = this.state;
-    messages = [];
-    this.setState({messages});
     this.setState({activeChannel});
-    // TODO : Get channel messages from Go server
+    this.socket.emit('message unsubscribe');
+    this.setState({messages: []});
+    this.socket.emit('message subscribe', {channelId: activeChannel.id});
   }
 
   // Sets a name for the current user
   setUserName(name) {
-    let {users} = this.state;
-    users.push({id: users.length, name});
-    this.setState({users});
-    // TODO : Send to Go server
+    this.socket.emit('user edit', {name});
   }
 
   // Sends a message to the activeChannel
   sendMessage(body) {
-    let {messages, users} = this.state;
-    let createdAt = new Date;
-    let author = users.length > 0 ? users[0].name : 'anonymous_alien';
-    messages.push({id: messages.length, body, createdAt, author});
-    this.setState(messages);
-    // TODO : Send to server
+    let {activeChannel} = this.state;
+    this.socket.emit('message send', {
+      channelId: activeChannel.id,
+      body
+    });
   }
 
   render() {
