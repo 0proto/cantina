@@ -21486,7 +21486,7 @@
 	      socket.on('user add', this.onAddUser.bind(this));
 	      socket.on('user edit', this.onEditUser.bind(this));
 	      socket.on('user remove', this.onRemoveUser.bind(this));
-	      socket.on('message send', this.onMessageSend.bind(this));
+	      socket.on('message add', this.onMessageAdd.bind(this));
 	    }
 	  }, {
 	    key: 'onConnect',
@@ -21543,8 +21543,8 @@
 	      this.setState({ users: users });
 	    }
 	  }, {
-	    key: 'onMessageSend',
-	    value: function onMessageSend(message) {
+	    key: 'onMessageAdd',
+	    value: function onMessageAdd(message) {
 	      var messages = this.state.messages;
 
 	      messages.push(message);
@@ -21585,7 +21585,7 @@
 	    value: function sendMessage(body) {
 	      var activeChannel = this.state.activeChannel;
 
-	      this.socket.emit('message send', {
+	      this.socket.emit('message add', {
 	        channelId: activeChannel.id,
 	        body: body
 	      });

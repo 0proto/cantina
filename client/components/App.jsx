@@ -26,7 +26,7 @@ class App extends Component {
     socket.on('user add', this.onAddUser.bind(this));
     socket.on('user edit', this.onEditUser.bind(this));
     socket.on('user remove', this.onRemoveUser.bind(this));
-    socket.on('message send', this.onMessageSend.bind(this));
+    socket.on('message add', this.onMessageAdd.bind(this));
   }
 
   onConnect() {
@@ -71,7 +71,7 @@ class App extends Component {
     this.setState({users});
   }
 
-  onMessageSend(message) {
+  onMessageAdd(message) {
     let {messages} = this.state;
     messages.push(message);
     this.setState({messages});
@@ -96,9 +96,9 @@ class App extends Component {
   }
 
   // Sends a message to the activeChannel
-  sendMessage(body) {
+  addMessage(body) {
     let {activeChannel} = this.state;
-    this.socket.emit('message send', {
+    this.socket.emit('message add', {
       channelId: activeChannel.id,
       body
     });
@@ -130,7 +130,7 @@ class App extends Component {
           <div className="col-xs-12 col-md-9">
             <MessageSection 
               {...this.state}
-              sendMessage={this.sendMessage.bind(this)}
+              addMessage={this.addMessage.bind(this)}
             />
           </div>
         </div>
