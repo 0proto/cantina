@@ -23,7 +23,7 @@ class MessageSection extends Component {
 MessageSection.propTypes = {
   messages: React.PropTypes.array.isRequired,
   activeChannel: React.PropTypes.object.isRequired,
-  sendMessage: React.PropTypes.func.isRequired
+  addMessage: React.PropTypes.func.isRequired
 }
 
 export default MessageSection

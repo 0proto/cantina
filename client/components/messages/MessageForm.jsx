@@ -5,7 +5,7 @@ class MessageForm extends Component {
     e.preventDefault();
     const node = this.refs.message;
     const message = node.value;
-    this.props.sendMessage(message);
+    this.props.addMessage(message);
     node.value = '';
   }
 
@@ -35,7 +35,7 @@ class MessageForm extends Component {
 
 MessageForm.propTypes = {
   activeChannel: React.PropTypes.object.isRequired,
-  sendMessage: React.PropTypes.func.isRequired
+  addMessage: React.PropTypes.func.isRequired
 }
 
 export default MessageForm
