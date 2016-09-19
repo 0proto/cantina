@@ -10,7 +10,7 @@ import (
 type FindHandler func(string) (Handler, bool)
 
 type Client struct {
-	send         chan SocketMessage
+	send         chan Message
 	socket       *websocket.Conn
 	findHandler  FindHandler
 	session      *r.Session
@@ -35,7 +35,7 @@ func (c *Client) StopForKey(key int) {
 }
 
 func (client *Client) Read() {
-	var message SocketMessage
+	var message Message
 
 	for {
 		if err := client.socket.ReadJSON(&message); err != nil {
@@ -55,7 +55,6 @@ func (client *Client) Write() {
 			break
 		}
 	}
-
 	client.socket.Close()
 }
 
@@ -71,20 +70,21 @@ func (c *Client) Close() {
 func NewClient(socket *websocket.Conn, findHandler FindHandler,
 	session *r.Session) *Client {
 	var user User
-	user.Name = "guest"
+	var id string
+
+	user.Name = "anonymous"
 	res, err := r.Table("user").Insert(user).RunWrite(session)
 
 	if err != nil {
 		log.Println(err.Error())
 	}
 
-	var id string
 	if len(res.GeneratedKeys) > 0 {
 		id = res.GeneratedKeys[0]
 	}
 
 	return &Client{
-		send:         make(chan SocketMessage),
+		send:         make(chan Message),
 		socket:       socket,
 		findHandler:  findHandler,
 		session:      session,
