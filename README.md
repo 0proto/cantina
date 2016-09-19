@@ -27,6 +27,7 @@ go run *.go
 ### Run the client
 ```
 cd client
+npm install
 webpack-dev-server --port 4001
 ```
 
